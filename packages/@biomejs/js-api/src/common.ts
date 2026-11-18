@@ -372,15 +372,12 @@ export class BiomeCommon<Configuration, Diagnostic> {
 				}
 
 				if (isFormatContentDebug(options)) {
-					const ir = this.workspace.getFormatterIr({
-						projectKey,
-						path,
-					});
-
 					return {
 						content: code,
 						diagnostics: result.diagnostics,
-						ir,
+						ir: options.debug
+							? this.workspace.getFormatterIr({ projectKey, path })
+							: "",
 					};
 				}
 			}

@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { Workspace } from "@biomejs/wasm-nodejs";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProjectKey } from "../../backend-jsonrpc/dist";
 import { Biome, Distribution } from "../dist";
 
@@ -14,6 +15,7 @@ describe("Biome WebAssembly formatContent", () => {
 	});
 
 	afterEach(() => {
+		vi.restoreAllMocks();
 		biome.shutdown();
 	});
 
@@ -64,6 +66,19 @@ describe("Biome WebAssembly formatContent", () => {
 		expect(result.ir).toMatchInlineSnapshot(
 			`"["function f", group(["()"]), " {}", hard_line_break]"`,
 		);
+	});
+
+	it("should leave the formatter IR empty when debug is false", () => {
+		const getFormatterIr = vi.spyOn(Workspace.prototype, "getFormatterIr");
+		const result = biome.formatContent(projectKey, "function f   () {  }", {
+			filePath: "example.js",
+			debug: false,
+		});
+
+		expect(result.content).toBe("function f() {}\n");
+		expect(result.diagnostics).toEqual([]);
+		expect(result.ir).toBe("");
+		expect(getFormatterIr).not.toHaveBeenCalled();
 	});
 
 	it("should not format content with range", () => {
